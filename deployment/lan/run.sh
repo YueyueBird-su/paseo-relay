@@ -7,7 +7,7 @@ lan_release_root=${PASEO_RELAY_RELEASE_ROOT:-$lan_repo_root/_build/prod/rel/pase
 
 # This private deployment uses the operator's fixed overlay-network address.
 # Override the host when packaging for a different machine or interface.
-export PASEO_RELAY_HOST=${PASEO_RELAY_HOST:-10.112.112.93}
+export PASEO_RELAY_HOST=${PASEO_RELAY_HOST:-10.112.112.91}
 export PASEO_RELAY_PORT=${PASEO_RELAY_PORT:-4000}
 export PASEO_RELAY_ALLOW_LEGACY_BASE64URL=${PASEO_RELAY_ALLOW_LEGACY_BASE64URL:-true}
 export PASEO_RELAY_MIN_CLUSTER_SIZE=${PASEO_RELAY_MIN_CLUSTER_SIZE:-1}

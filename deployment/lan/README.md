@@ -7,14 +7,14 @@ MIX_ENV=prod mix release
 ./deployment/lan/run.sh
 ```
 
-The launcher defaults to `10.112.112.93:4000` and explicitly enables legacy
+The launcher defaults to `10.112.112.91:4000` and explicitly enables legacy
 Agentero Base64URL compatibility. Generic release defaults remain unchanged.
 The address must actually belong to the host; configure a static overlay IP
 before starting. Override `PASEO_RELAY_HOST` for a different machine/interface.
 
 This deployment intentionally does not listen on all interfaces. Overlay
 clients must have the appropriate network membership and route to
-`ws://10.112.112.93:4000`. The QR offer contains
+`ws://10.112.112.91:4000`. The QR offer contains
 one reachable endpoint; it does not automatically discover or switch networks.
 
 Package the native release on its target OS/architecture:
