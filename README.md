@@ -235,3 +235,6 @@ Base64. Exact 32-byte length, canonical curve coordinates, and unsupported-key
 rejection remain enforced. Original handshake frames are forwarded unchanged so
 legacy desktop Hosts can decode them. The option does not authorize a device or
 change pairing approval, encrypted payloads, routing limits, or capacity settings.
+
+For a native private LAN / overlay-network launcher, all-interface binding and
+relocatable packaging, see [deployment/lan/README.md](deployment/lan/README.md).

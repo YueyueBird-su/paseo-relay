@@ -367,3 +367,9 @@ Base64. With the option enabled, only canonical unpadded Base64URL is additional
 accepted; all public-key validation remains active and frames stay unchanged.
 Bind a LAN experiment to its intended private interface. No connection ceilings,
 delivery timeouts, or memory budgets are changed by this option.
+
+The private `deployment/lan/run.sh` adapter binds the fixed overlay address
+`10.112.112.93:4000` unless overridden with `PASEO_RELAY_HOST`. The address
+must belong to the host. The adapter does not configure network membership,
+firewall rules or public router forwarding. Client offers must advertise a
+reachable interface IP or DNS name. The generic Config default stays loopback-only.
