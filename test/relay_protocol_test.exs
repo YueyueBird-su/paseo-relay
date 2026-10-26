@@ -381,14 +381,42 @@ defmodule PaseoRelay.RelayProtocolTest do
     port
   end
 
-  defp start_relay do
+  test "v2 LAN relay forwards an old Agentero handshake unchanged when enabled" do
+    config = Map.put(PaseoRelay.Config.defaults(), :allow_legacy_base64url, true)
+    port = start_relay(config)
+    {:ok, control} = connect(v2_url(port, "server"))
+    assert_receive {:relay_open, ^control}
+    assert_control(control, %{"type" => "sync", "connectionIds" => []})
+
+    {:ok, client} = connect(v2_url(port, "client", "clt_legacy_agentero"))
+    assert_receive {:relay_open, ^client}
+    assert_control(control, %{"type" => "connected", "connectionId" => "clt_legacy_agentero"})
+    {:ok, data} = connect(v2_url(port, "server", "clt_legacy_agentero"))
+    assert_receive {:relay_open, ^data}
+
+    hello =
+      Jason.encode!(%{
+        type: "e2ee_hello",
+        key: Base.url_encode64(valid_public_key(), padding: false)
+      })
+
+    :ok = WebSockex.send_frame(client, {:text, hello})
+    assert_receive {:relay_frame, ^data, :text, ^hello}, 1_000
+    :ok = WebSockex.send_frame(data, {:text, ~s({"type":"e2ee_ready"})})
+    assert_receive {:relay_frame, ^client, :text, ~s({"type":"e2ee_ready"})}, 1_000
+    :ok = WebSockex.send_frame(client, {:binary, <<1, 2, 3>>})
+    assert_receive {:relay_frame, ^data, :binary, <<1, 2, 3>>}, 1_000
+    close_clients([data, client, control])
+  end
+
+  defp start_relay(config \\ PaseoRelay.Config.defaults()) do
     port = available_port()
     reference = {:relay_protocol, System.unique_integer([:positive])}
 
     start_supervised!(
       {PaseoRelay.Listener,
        ref: reference,
-       config: PaseoRelay.Config.defaults(),
+       config: config,
        ip: {127, 0, 0, 1},
        port: port,
        acceptors: 4,

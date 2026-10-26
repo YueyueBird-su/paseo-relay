@@ -23,6 +23,26 @@ defmodule PaseoRelay.HandshakeValidationTest do
     end
   end
 
+  test "legacy Base64URL requires opt-in and still rejects invalid public keys" do
+    {public_key, _private_key} = :crypto.generate_key(:ecdh, :x25519)
+    payload = handshake("e2ee_hello", Base.url_encode64(public_key, padding: false))
+
+    assert HandshakeValidation.check(:text, payload) == {:reject, :e2ee_hello}
+    assert HandshakeValidation.check(:text, payload, true) == {:accept, :e2ee_hello}
+
+    for key <- [<<0::256>>, <<9, 0::size(30 * 8), 0x80>>, :crypto.strong_rand_bytes(31)] do
+      invalid = handshake("e2ee_hello", Base.url_encode64(key, padding: false))
+      assert HandshakeValidation.check(:text, invalid, true) == {:reject, :e2ee_hello}
+    end
+
+    invalid_pad_bits =
+      Base.url_encode64(<<9, 0::size(31 * 8)>>, padding: false)
+      |> String.replace_suffix("A", "B")
+
+    assert HandshakeValidation.check(:text, handshake("e2ee_hello", invalid_pad_bits), true) ==
+             {:reject, :e2ee_hello}
+  end
+
   test "rejects an unsupported public key" do
     payload = handshake("e2ee_hello", Base.encode64(<<0::256>>))
 

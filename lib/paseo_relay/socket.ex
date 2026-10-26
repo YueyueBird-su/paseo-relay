@@ -179,7 +179,7 @@ defmodule PaseoRelay.Socket do
   def terminate(_reason, _request, _state), do: :ok
 
   defp admit_input(opcode, payload, token, %{connection: %{role: :client}} = state) do
-    case HandshakeValidation.check(opcode, payload) do
+    case HandshakeValidation.check(opcode, payload, state.config.allow_legacy_base64url) do
       :not_handshake ->
         forward_admitted_input(opcode, payload, token, state)
 

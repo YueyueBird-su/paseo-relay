@@ -5,6 +5,7 @@ defmodule PaseoRelay.Config do
             ip: {127, 0, 0, 1},
             port: 4000,
             drain: false,
+            allow_legacy_base64url: false,
             acceptors: 100,
             connections_per_acceptor: 200,
             http_idle_timeout_ms: 15_000,
@@ -36,6 +37,12 @@ defmodule PaseoRelay.Config do
     with {:ok, ip} <- ip(host),
          {:ok, port} <- port(environment, "PASEO_RELAY_PORT", defaults.port),
          {:ok, drain} <- boolean(environment, "PASEO_RELAY_DRAIN", defaults.drain),
+         {:ok, allow_legacy_base64url} <-
+           boolean(
+             environment,
+             "PASEO_RELAY_ALLOW_LEGACY_BASE64URL",
+             defaults.allow_legacy_base64url
+           ),
          {:ok, acceptors} <-
            integer(environment, "PASEO_RELAY_ACCEPTORS", defaults.acceptors, 1..1_000),
          {:ok, connections_per_acceptor} <-
@@ -132,6 +139,7 @@ defmodule PaseoRelay.Config do
          ip: ip,
          port: port,
          drain: drain,
+         allow_legacy_base64url: allow_legacy_base64url,
          acceptors: acceptors,
          connections_per_acceptor: connections_per_acceptor,
          http_idle_timeout_ms: http_idle_timeout_ms,

@@ -225,3 +225,13 @@ assumptions:
 ```sh
 docker build -f deployment/load/Dockerfile -t paseo-relay-load .
 ```
+
+## Legacy Agentero LAN compatibility
+
+`PASEO_RELAY_ALLOW_LEGACY_BASE64URL` defaults to `false`. A private relay serving
+Agentero 0.13.0 mobile clients can explicitly set it to `true` to accept canonical
+unpadded Base64URL in `hello` / `e2ee_hello` keys in addition to standard padded
+Base64. Exact 32-byte length, canonical curve coordinates, and unsupported-key
+rejection remain enforced. Original handshake frames are forwarded unchanged so
+legacy desktop Hosts can decode them. The option does not authorize a device or
+change pairing approval, encrypted payloads, routing limits, or capacity settings.

@@ -912,3 +912,27 @@
   test/paseo_relay/handshake_validation_test.exs test/relay_protocol_test.exs`
   passed 20/20 in 81.4 seconds. `asdf exec mix format`, `asdf exec mix compile
   --warnings-as-errors --force`, and `git diff --check` exited zero.
+
+## Opt-in Agentero 0.13 LAN handshake compatibility
+
+- Red: focused Config, HandshakeValidation and real v2 socket tests returned
+  29/32 passed. The three new tests failed because the option/check boundary was
+  absent and the legacy handshake closed with 1008 instead of reaching the Host.
+- Green: the same tests passed 32/32 at seed 0 in 81.4 seconds. The real listener
+  forwards an old Base64URL handshake unchanged, returns e2ee_ready, and carries
+  binary data. Unit tests retain rejection of low-order keys, invalid curve
+  encodings, wrong lengths and noncanonical pad bits; default strict behavior
+  remains covered.
+- Deployment smoke: native prod release bound to the Mac's private interface;
+  health/ready succeeded. A real iPhone reached health, paired with the modified
+  desktop, listed the test Vault, and read both a PDF and its note. The user
+  confirmed the verification string on the phone. Metrics showed one v2
+  e2ee_hello accepted and no rejected handshakes.
+- Full suite initially returned 110/112 passed, with an existing load-client
+  error-text assertion and synchronous close under byte-budget pressure failing;
+  baseline/rerun investigation is recorded in the external deployment report.
+- Follow-up: isolated unmodified HEAD reproduced the same Node/WebSocket
+  error-text assertion failure (`WebSocket connection failed` versus expected
+  `non-101 status code`). The byte-budget test passed on unmodified HEAD and
+  then passed on the modified tree when rerun alone (1/1). No unrelated test
+  assertions or capacity behavior were changed to hide these results.

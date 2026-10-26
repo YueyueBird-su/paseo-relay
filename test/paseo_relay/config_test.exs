@@ -7,6 +7,16 @@ defmodule PaseoRelay.ConfigTest do
     assert Config.load([]) == {:ok, Config.defaults()}
   end
 
+  test "legacy Base64URL compatibility is disabled unless explicitly configured" do
+    assert Map.get(Config.defaults(), :allow_legacy_base64url) == false
+
+    assert {:ok, %{allow_legacy_base64url: true}} =
+             Config.load([{"PASEO_RELAY_ALLOW_LEGACY_BASE64URL", "true"}])
+
+    assert {:error, _} =
+             Config.load([{"PASEO_RELAY_ALLOW_LEGACY_BASE64URL", "invalid"}])
+  end
+
   test "loads and validates the Capacity mutation timeout" do
     assert Config.defaults().capacity_mutation_timeout_ms == 5_000
 

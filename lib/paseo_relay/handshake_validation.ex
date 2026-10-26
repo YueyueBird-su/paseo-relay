@@ -26,10 +26,12 @@ defmodule PaseoRelay.HandshakeValidation do
   @type result :: :not_handshake | {:accept, handshake_type()} | {:reject, handshake_type()}
 
   @spec check(:text | :binary, binary()) :: result()
-  def check(opcode, payload) when opcode in [:text, :binary] and is_binary(payload) do
+  @spec check(:text | :binary, binary(), boolean()) :: result()
+  def check(opcode, payload, allow_legacy_base64url \\ false)
+      when opcode in [:text, :binary] and is_binary(payload) do
     with {:ok, %{"type" => type} = message} <- Jason.decode(payload),
          {:ok, handshake_type} <- Map.fetch(@handshake_types, type) do
-      if valid_public_key?(message["key"]) do
+      if valid_public_key?(message["key"], allow_legacy_base64url) do
         {:accept, handshake_type}
       else
         {:reject, handshake_type}
@@ -39,10 +41,9 @@ defmodule PaseoRelay.HandshakeValidation do
     end
   end
 
-  defp valid_public_key?(encoded) when is_binary(encoded) do
-    with {:ok, public_key} <- Base.decode64(encoded, padding: true),
+  defp valid_public_key?(encoded, allow_legacy_base64url) when is_binary(encoded) do
+    with {:ok, public_key} <- decode_key(encoded, allow_legacy_base64url),
          32 <- byte_size(public_key),
-         ^encoded <- Base.encode64(public_key),
          true <- canonical_coordinate?(public_key),
          false <- public_key in @unsupported_public_keys do
       true
@@ -51,7 +52,27 @@ defmodule PaseoRelay.HandshakeValidation do
     end
   end
 
-  defp valid_public_key?(_invalid), do: false
+  defp valid_public_key?(_invalid, _allow_legacy_base64url), do: false
+
+  defp decode_key(encoded, allow_legacy_base64url) do
+    with {:ok, public_key} <- Base.decode64(encoded, padding: true),
+         ^encoded <- Base.encode64(public_key) do
+      {:ok, public_key}
+    else
+      _invalid -> decode_legacy_key(encoded, allow_legacy_base64url)
+    end
+  end
+
+  defp decode_legacy_key(encoded, true) do
+    with {:ok, public_key} <- Base.url_decode64(encoded, padding: false),
+         ^encoded <- Base.url_encode64(public_key, padding: false) do
+      {:ok, public_key}
+    else
+      _invalid -> :error
+    end
+  end
+
+  defp decode_legacy_key(_encoded, false), do: :error
 
   defp canonical_coordinate?(<<coordinate::little-unsigned-integer-size(256)>>),
     do: coordinate < @field_prime

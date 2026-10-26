@@ -358,3 +358,12 @@ Fly's managed Grafana provides dashboards, but alert delivery needs a separate
 Grafana/Alertmanager setup. The next metrics needed for incident diagnosis are
 low-cardinality counters for rejected upgrades, close reasons, ownership
 takeovers, and cluster peer count.
+
+## Private legacy-client compatibility
+
+The optional `PASEO_RELAY_ALLOW_LEGACY_BASE64URL=true` setting is intended for
+private Agentero 0.13.0 compatibility. Its default is strict standard padded
+Base64. With the option enabled, only canonical unpadded Base64URL is additionally
+accepted; all public-key validation remains active and frames stay unchanged.
+Bind a LAN experiment to its intended private interface. No connection ceilings,
+delivery timeouts, or memory budgets are changed by this option.
