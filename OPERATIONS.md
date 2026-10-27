@@ -373,3 +373,8 @@ The private `deployment/lan/run.sh` adapter binds the fixed overlay address
 must belong to the host. The adapter does not configure network membership,
 firewall rules or public router forwarding. Client offers must advertise a
 reachable interface IP or DNS name. The generic Config default stays loopback-only.
+
+The private single-node adapter defaults to `RELEASE_DISTRIBUTION=none`.
+Its public archive excludes the build cookie and the launcher supplies a fresh
+runtime cookie unless explicitly configured. Operators enabling distributed
+Erlang must provide their own distribution mode and cookie.

@@ -27,3 +27,9 @@ Extract the archive and run `start.command`. It uses bundled ERTS; it does not
 include pairing identities, Vaults, or machine-specific Git credentials.
 Only run one relay per listening port. A standalone archive stays in the
 foreground until interrupted. Configure a user service separately if needed.
+
+Public archives omit the build-time Erlang distribution cookie. This adapter
+defaults to `RELEASE_DISTRIBUTION=none` and generates a fresh runtime cookie
+with the system `openssl` command. For deliberate distributed operation, supply
+your own `RELEASE_DISTRIBUTION` and `RELEASE_COOKIE`; generic release behavior
+is unchanged.

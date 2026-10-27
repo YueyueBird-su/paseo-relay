@@ -12,4 +12,12 @@ export PASEO_RELAY_PORT=${PASEO_RELAY_PORT:-4000}
 export PASEO_RELAY_ALLOW_LEGACY_BASE64URL=${PASEO_RELAY_ALLOW_LEGACY_BASE64URL:-true}
 export PASEO_RELAY_MIN_CLUSTER_SIZE=${PASEO_RELAY_MIN_CLUSTER_SIZE:-1}
 
+# This single-node adapter does not need distributed Erlang. Public archives
+# omit the build cookie; use a fresh value unless the operator supplies one.
+export RELEASE_DISTRIBUTION=${RELEASE_DISTRIBUTION:-none}
+if [ -z "${RELEASE_COOKIE:-}" ]; then
+  RELEASE_COOKIE=$(openssl rand -hex 32)
+  export RELEASE_COOKIE
+fi
+
 exec "$lan_release_root/bin/paseo_relay" start

@@ -14,6 +14,8 @@ cd "$lan_repo_root"
 MIX_ENV=prod mix release --overwrite
 mkdir -p "$lan_output_dir" "$lan_stage/$lan_name/deployment/lan"
 cp -R _build/prod/rel/paseo_relay "$lan_stage/$lan_name/release"
+# A public download must not contain the builder's distribution credential.
+rm -f "$lan_stage/$lan_name/release/releases/COOKIE"
 cp LICENSE "$lan_stage/$lan_name/LICENSE"
 cp deployment/lan/run.sh deployment/lan/README.md "$lan_stage/$lan_name/deployment/lan/"
 cat > "$lan_stage/$lan_name/start.command" <<'LAUNCHER'

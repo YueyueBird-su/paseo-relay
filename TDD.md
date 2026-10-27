@@ -936,3 +936,16 @@
   `non-101 status code`). The byte-budget test passed on unmodified HEAD and
   then passed on the modified tree when rerun alone (1/1). No unrelated test
   assertions or capacity behavior were changed to hide these results.
+
+
+## Public single-node package credentials
+
+- Red: a launcher probe with an isolated executable and no release environment
+  exited 21 because distribution mode was not explicitly disabled. Archive
+  inspection also found the generated `release/releases/COOKIE` file.
+- Green: the same probe now passes with a fresh nonempty runtime cookie and
+  distribution disabled; a second probe confirms explicit operator cookie and
+  distribution overrides are preserved. Shell syntax and diff checks pass.
+- The packaging stage removes only its copied build cookie. Generic releases
+  and the installed running service are not modified. A fresh extracted public
+  archive is separately smoke-tested through health and real WebSockets.
