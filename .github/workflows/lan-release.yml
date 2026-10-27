@@ -1,0 +1,101 @@
+name: LAN relay packages
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/lan-ws-relay]
+    tags: ['lan-relay-*']
+    paths:
+      - '.github/workflows/lan-release.yml'
+      - 'deployment/lan/**'
+      - 'lib/**'
+      - 'config/**'
+      - 'mix.*'
+      - '.tool-versions'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lan-relay-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  build:
+    name: Relay (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: darwin-arm64, os: macos-15}
+          - {name: darwin-x64, os: macos-15-intel}
+          - {name: linux-x64, os: ubuntu-22.04}
+          - {name: linux-arm64, os: ubuntu-24.04-arm}
+          - {name: windows-x64, os: windows-2022}
+    env:
+      MIX_ENV: prod
+      ERL_FLAGS: '+S 4:4'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: '29.0.3'
+          elixir-version: '1.20.2'
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - run: mix deps.get --only prod
+      - name: Package Unix release
+        if: runner.os != 'Windows'
+        run: ./deployment/lan/package.sh
+      - name: Package Windows release
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./deployment/lan/package.ps1
+      - name: Boot extracted package and test real WebSockets
+        shell: bash
+        run: |
+          set -euo pipefail
+          for archive in dist/*.tar.gz dist/*.zip; do
+            if [ -f "$archive" ]; then
+              node deployment/lan/smoke.mjs "$archive"
+            fi
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: relay-${{ matrix.name }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+
+  publish:
+    name: Publish relay prerelease
+    if: startsWith(github.ref, 'refs/tags/lan-relay-')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: relay-*
+          path: release-assets
+          merge-multiple: true
+      - name: Generate checksums
+        working-directory: release-assets
+        run: find . -type f ! -name SHA256SUMS.txt -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: LAN Relay ${{ github.ref_name }}
+          prerelease: true
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: release-assets/*
+          body: |
+            Native single-node relay builds with bundled Erlang runtime. Default listener: 10.112.112.91:4000.
+            Each extracted archive passes health and real v2 WebSocket smoke tests. No build cookie is included.
+            Linux binaries require compatible system libraries; Windows requires Microsoft Visual C++ Runtime. These are local test builds, not notarized installers.

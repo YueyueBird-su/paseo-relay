@@ -8,7 +8,7 @@ defmodule PaseoRelay.MixProject do
       elixir: "~> 1.20",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
-      releases: [paseo_relay: [include_executables_for: [:unix]]],
+      releases: [paseo_relay: [include_executables_for: release_platforms()]],
       # Cowlib's cookie advisory concerns its unused client encoder. Cowboy 2.17
       # rejects the response-splitting advisory's invalid headers server-side.
       hex: [ignore_advisories: ["CVE-2026-43966", "CVE-2026-43969", "CVE-2026-43971"]],
@@ -18,6 +18,13 @@ defmodule PaseoRelay.MixProject do
 
   def application,
     do: [extra_applications: [:logger, :syn, :cowboy], mod: {PaseoRelay.Application, []}]
+
+  defp release_platforms do
+    case :os.type() do
+      {:win32, _} -> [:windows]
+      _ -> [:unix]
+    end
+  end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_environment), do: ["lib"]

@@ -949,3 +949,15 @@
 - The packaging stage removes only its copied build cookie. Generic releases
   and the installed running service are not modified. A fresh extracted public
   archive is separately smoke-tested through health and real WebSockets.
+
+## Native LAN package matrix
+
+- Red: the new extracted-package smoke failed against the prior public Mac
+  archive because the portable Unix `start.sh` entry point was absent.
+- Green: the rebuilt native Mac archive includes that entry point, retains the
+  Finder `.command` entry, omits the build cookie and passes health plus real
+  v2 WebSocket transfer. Windows validation runs on a real Windows runner,
+  not a mock of CMD, PowerShell or the Mix Windows release executable.
+- The matrix boots every OS/architecture archive before artifact upload;
+  only a fully successful tagged matrix publishes its prerelease. Existing
+  generic CI and the installed relay are unchanged.

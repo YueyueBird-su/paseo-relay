@@ -378,3 +378,9 @@ The private single-node adapter defaults to `RELEASE_DISTRIBUTION=none`.
 Its public archive excludes the build cookie and the launcher supplies a fresh
 runtime cookie unless explicitly configured. Operators enabling distributed
 Erlang must provide their own distribution mode and cookie.
+
+Native GitHub packaging is isolated from any deployed service: each runner
+boots an extracted archive on loopback port 4001 and closes its test process
+tree afterward. Only a successful full matrix publishes a prerelease for a
+`lan-relay-*` tag. Windows uses the Mix Windows executables and a native CMD
+launcher; Linux artifacts depend on the runner distribution's system libraries.
